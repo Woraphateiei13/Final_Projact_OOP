@@ -31,10 +31,12 @@ public class Enemy_Boss {
 
     private BossState selectNextAttack() {
         int chance = random.nextInt(3);
-        if (chance == 0)
+        if (chance == 0) {
             return BossState.ATTACKING_BUG;
-        if (chance == 1)
+        }
+        if (chance == 1) {
             return BossState.ATTACKING_FIREWALL;
+        }
         return BossState.ATTACKING_MIXED;
     }
 
@@ -117,7 +119,7 @@ public class Enemy_Boss {
         try {
             return ImageIO.read(getClass().getResourceAsStream("/img/Boss_re.png"));
         } catch (IOException | IllegalArgumentException e) {
-            System.out.println("Can't find - Enemy_Boss.java:120");
+            System.out.println("Can't find - Enemy_Boss.java:122");
             return null;
         }
     }
