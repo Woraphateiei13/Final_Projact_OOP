@@ -29,9 +29,12 @@ public class Game extends JPanel implements KeyListener, MouseListener {
     // private Enemy_Bug enebug;
     // private Enemy_Firewall enefire;
     private List<Object> activeEnemies;
-    private Timer spawnTimer;
+    // private Timer spawnTimer;
     private Random random;
+    private Timer gameLoopTimer;
+
     private int spawnInterval = 2000;
+    private long lastSpawnTime = 0;
 
     private Hp_bar hpbar;
     private Background background;
@@ -58,15 +61,41 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         random = new Random();
         gameStats = new GameStats();
 
-        spawnTimer = new Timer(spawnInterval, e -> {
+        // spawnTimer.start();
+        gameLoopTimer = new Timer(16, e -> {
             if (currenState == GameState.PLAYING) {
-                spawnEnemy();
+                updateGame();
+                repaint();
             }
         });
-        spawnTimer.start();
+        gameLoopTimer.start();
 
         // enebug = new Enemy_Bug(800, 300, 50, 70, 10, this);
         // enefire = new Enemy_Firewall(900, 470, 50, 60, 10, this);
+    }
+
+    private void updateGame() {
+        activeEnemies.forEach(en -> {
+            if (en instanceof Enemy_Bug) {
+                ((Enemy_Bug) en).updatePosition(this);
+            } else if (en instanceof Enemy_Firewall) {
+                ((Enemy_Firewall) en).updatePosition(this);
+            }
+        });
+
+        if (System.currentTimeMillis() - lastSpawnTime > spawnInterval) {
+            spawnEnemy();
+            lastSpawnTime = System.currentTimeMillis();
+        }
+        activeEnemies.removeIf(en -> {
+            int x = 0;
+            if (en instanceof Enemy_Bug) {
+                x = ((Enemy_Bug) en).x;
+            } else if (en instanceof Enemy_Firewall) {
+                x = ((Enemy_Firewall) en).x;
+            }
+            return x < -100;
+        });
     }
 
     public void increaseDifficulty() {
@@ -74,7 +103,7 @@ public class Game extends JPanel implements KeyListener, MouseListener {
             spawnInterval -= 100;
         }
 
-        spawnTimer.setDelay(spawnInterval);
+        // spawnTimer.setDelay(spawnInterval);
         System.out.println(spawnInterval);
     }
 
@@ -105,8 +134,18 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         hpBar = new Hp_bar(bot.getMaxHealth());
         gameStats = new GameStats();
 
+        activeEnemies.forEach(enemy -> {
+            if (enemy instanceof Enemy_Bug)
+                ((Enemy_Bug) enemy).stopMoving();
+            if (enemy instanceof Enemy_Firewall)
+                ((Enemy_Firewall) enemy).stopMoving();
+        });
+
         activeEnemies.clear();
-        spawnTimer.restart();
+
+        lastSpawnTime = System.currentTimeMillis();
+
+        // spawnTimer.restart();
         // enebug.stopMoving();
         // enefire.stopMoving();
         // enebug = new Enemy_Bug(800, 370, 50, 70, 10, this);
@@ -148,16 +187,6 @@ public class Game extends JPanel implements KeyListener, MouseListener {
                 }
             }
 
-            activeEnemies.removeIf(en -> {
-                int x = 0;
-                if (en instanceof Enemy_Bug) {
-                    x = ((Enemy_Bug) en).x;
-                } else if (en instanceof Enemy_Firewall) {
-                    x = ((Enemy_Firewall) en).x;
-                }
-                return x < -100;
-            });
-
             gameStats.draw(g, 1000);
             g2.drawImage(bot.getImage(), bot.x, bot.y, bot.botSize, bot.botSize, null);
             hpBar.draw(g, bot.getHealth(), 40, 40);
@@ -170,7 +199,7 @@ public class Game extends JPanel implements KeyListener, MouseListener {
 
             if (bot.health <= 0) {
                 currenState = GameState.GAMEOVER;
-                spawnTimer.stop();
+                gameLoopTimer.stop();
 
                 activeEnemies.forEach(e -> {
                     if (e instanceof Enemy_Bug)
