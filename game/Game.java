@@ -64,14 +64,11 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         this.setFocusable(true);
         this.setLayout(null);
         this.setDoubleBuffered(true);
-
         // enemies = makeEnemySet(5);
         activeEnemies = new ArrayList<>();
         random = new Random();
         gameStats = new GameStats();
-
         bg = new Background(BG_PATHS[0]);
-
         difficultyTimer = new Timer(20000, e -> {
             if (currenState == GameState.PLAYING) {
                 increaseDifficulty();
@@ -85,7 +82,6 @@ public class Game extends JPanel implements KeyListener, MouseListener {
             }
         });
         gameLoopTimer.start();
-
         // enebug = new Enemy_Bug(800, 300, 50, 70, 10, this);
         // enefire = new Enemy_Firewall(900, 470, 50, 60, 10, this);
     }
@@ -446,14 +442,16 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         return gameStats;
     }
 
-    private Enemy_Bug[] makeEnemySet(int enemyNumber) {
-        Enemy_Bug[] enemySet = new Enemy_Bug[enemyNumber];
-        for (int i = 0; i < enemyNumber; i++) {
-            double enemyLocation = 1000 + Math.floor(Math.random() * 1000);
-            enemySet[i] = new Enemy_Bug((int) enemyLocation, 300, 30, 40, 10, this);
-        }
-        return enemySet;
-    }
+    /*
+     * private Enemy_Bug[] makeEnemySet(int enemyNumber) {
+     * Enemy_Bug[] enemySet = new Enemy_Bug[enemyNumber];
+     * for (int i = 0; i < enemyNumber; i++) {
+     * double enemyLocation = 1000 + Math.floor(Math.random() * 1000);
+     * enemySet[i] = new Enemy_Bug((int) enemyLocation, 300, 30, 40, 10, this);
+     * }
+     * return enemySet;
+     * }
+     */
 
     @Override
     public void keyTyped(KeyEvent e) {

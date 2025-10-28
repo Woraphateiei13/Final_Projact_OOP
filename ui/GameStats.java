@@ -26,7 +26,7 @@ public class GameStats {
         try {
             scoreIcon = ImageIO.read(getClass().getResourceAsStream("/img/Wi-Fi.png"));
         } catch (Exception e) {
-            System.out.println("Can't find  GameStats.java:29 - Gamestats.java:29");
+            System.out.println("Can't find - GameStats.java:29");
             scoreIcon = null;
         }
     }

@@ -10,7 +10,7 @@ public class Background {
         try {
             bgImage = ImageIO.read(getClass().getResourceAsStream(path));
         } catch (Exception e) {
-            System.out.println("❌ ไม่พบภาพพื้นหลัง: - Background.java:13" + path);
+            System.out.println("Can't find - Background.java:13" + path);
         }
     }
 
