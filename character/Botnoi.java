@@ -31,7 +31,7 @@ public class Botnoi {
         this.health -= damage;
         this.isHit = true;
 
-        Timer hitTimer = new Timer(1500, new ActionListener() {
+        Timer hitTimer = new Timer(500, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 isHit = false;
@@ -46,7 +46,7 @@ public class Botnoi {
 
     public void jump(JPanel game) {
         this.y -= jumpHigh;
-        Timer timer = new Timer(450, new ActionListener() {
+        Timer timer = new Timer(600, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 y += jumpHigh;

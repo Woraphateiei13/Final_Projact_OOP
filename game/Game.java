@@ -29,6 +29,7 @@ public class Game extends JPanel implements KeyListener, MouseListener {
     // private Enemy_Bug enebug;
     // private Enemy_Firewall enefire;
     private List<Object> activeEnemies;
+    private Enemy_Boss boss = null;
     // private Timer spawnTimer;
     private Random random;
     private Timer gameLoopTimer;
@@ -41,6 +42,7 @@ public class Game extends JPanel implements KeyListener, MouseListener {
     private Hp_bar hpbar;
     private Background bg;
     private GameStats gameStats;
+    private long lastBossAttackTime = 0;
 
     int gameSpeed = 30;
     long lastPress = 0;
@@ -70,7 +72,7 @@ public class Game extends JPanel implements KeyListener, MouseListener {
 
         bg = new Background(BG_PATHS[0]);
 
-        difficultyTimer = new Timer(45000, e -> {
+        difficultyTimer = new Timer(20000, e -> {
             if (currenState == GameState.PLAYING) {
                 increaseDifficulty();
             }
@@ -89,6 +91,29 @@ public class Game extends JPanel implements KeyListener, MouseListener {
     }
 
     private void updateGame() {
+        if (boss != null && !boss.isDead()) {
+            boss.updatePosition(this);
+            if (boss.getCurrentState() == Enemy_Boss.BossState.ATTACKING_BUG) {
+                if (System.currentTimeMillis() - lastBossAttackTime > 500) {
+                    activeEnemies.add(new Enemy_Bug(1000, 370, 50, 70, 20, this));
+                    lastBossAttackTime = System.currentTimeMillis();
+                }
+            } else if (boss.getCurrentState() == Enemy_Boss.BossState.ATTACKING_FIREWALL) {
+                if (System.currentTimeMillis() - lastBossAttackTime > 500) {
+                    activeEnemies.add(new Enemy_Firewall(1000, 470, 50, 60, 15, this));
+                    lastBossAttackTime = System.currentTimeMillis();
+                }
+            } else if (boss.getCurrentState() == Enemy_Boss.BossState.ATTACKING_MIXED) {
+                if (System.currentTimeMillis() - lastBossAttackTime > 400) {
+                    if (boss.isMixedAttackBug()) {
+                        activeEnemies.add(new Enemy_Bug(1000, 370, 50, 70, 20, this));
+                    } else {
+                        activeEnemies.add(new Enemy_Firewall(1000, 470, 50, 60, 15, null));
+                    }
+                    lastBossAttackTime = System.currentTimeMillis();
+                }
+            }
+        }
         activeEnemies.forEach(en -> {
             if (en instanceof Enemy_Bug) {
                 ((Enemy_Bug) en).updatePosition(this);
@@ -104,15 +129,21 @@ public class Game extends JPanel implements KeyListener, MouseListener {
                 }
             }
         });
-
-        if (System.currentTimeMillis() - lastSpawnTime > spawnInterval) {
-            spawnEnemy();
+        if (boss == null || boss.isDead()) {
+            if (System.currentTimeMillis() - lastSpawnTime > spawnInterval) {
+                spawnEnemy();
+                lastSpawnTime = System.currentTimeMillis();
+            }
+        } else {
             lastSpawnTime = System.currentTimeMillis();
         }
+
         activeEnemies.removeIf(en -> {
             int x = 0;
             boolean shouldRemove = false;
-            if (en instanceof Enemy_Bug) {
+            if (en instanceof Enemy_Boss) {
+                shouldRemove = ((Enemy_Boss) en).isDead();
+            } else if (en instanceof Enemy_Bug) {
                 Enemy_Bug bug = (Enemy_Bug) en;
                 x = bug.x;
                 shouldRemove = bug.isScored() || (x < -200);
@@ -128,7 +159,16 @@ public class Game extends JPanel implements KeyListener, MouseListener {
 
             return shouldRemove;
         });
+
     }
+
+    /*
+     * if (boss != null && boss.isDead()) {
+     * currenState = GameState.GAMEOVER;
+     * gameLoopTimer.stop();
+     * difficultyTimer.stop();
+     * }
+     */
 
     public void increaseDifficulty() {
         if (spawnInterval > 500) {
@@ -142,10 +182,16 @@ public class Game extends JPanel implements KeyListener, MouseListener {
             bg = new Background(newBgPath);
         }
 
-        System.out.println(spawnInterval);
+        // System.out.println(spawnInterval);
     }
 
     private void spawnEnemy() {
+        if (difficultyLevel >= 1 && (boss == null || boss.isDead())) {
+            if (random.nextInt(100) < 1) {
+                boss = new Enemy_Boss(1200, 250, 300, 300, this);
+                return;
+            }
+        }
         if (random.nextInt(100) < 10) {
             int yPos = 400;
             int w = 40;
@@ -180,6 +226,9 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         hpBar = new Hp_bar(bot.getMaxHealth());
         gameStats = new GameStats();
         difficultyLevel = 0;
+        spawnInterval = 1200;
+
+        this.boss = null;
 
         bg = new Background(BG_PATHS[0]);
 
@@ -216,6 +265,25 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         }
         if (currenState == GameState.PLAYING) {
             boolean tookDamage = false;
+
+            if (boss != null && !boss.isDead()) {
+                g2.drawImage(boss.getImage(), boss.x, boss.y, boss.width, boss.height, null);
+
+                g2.setColor(Color.DARK_GRAY);
+                g2.fillRect(700, 20, 200, 15);
+
+                /*
+                 * if (Event.checkHit(bot, boss)) {
+                 * if (boss.isVulnerable()) {
+                 * boss.receiveDamage(10);
+                 * } else {
+                 * if (bot.receiveDamage(5)) {
+                 * 
+                 * }
+                 * }
+                 * }
+                 */
+            }
 
             for (int i = 0; i < activeEnemies.size(); i++) {
                 Object enemy = activeEnemies.get(i);

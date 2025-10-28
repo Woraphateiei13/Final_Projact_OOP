@@ -21,4 +21,10 @@ public class Event {
         boolean y_Collision = (bot.y < item.y + item.height) && (bot.y + bot.botSize > item.y);
         return x_Collision && y_Collision;
     }
+
+    public static boolean checkHit(Botnoi bot, Enemy_Boss boss) {
+        boolean x_Collision = (bot.x < boss.x + boss.width) && (bot.x + bot.botSize > boss.x);
+        boolean y_Collision = (bot.y < boss.y + boss.height) && (bot.y + bot.botSize > boss.y);
+        return x_Collision && y_Collision;
+    }
 }
