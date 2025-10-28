@@ -186,8 +186,8 @@ public class Game extends JPanel implements KeyListener, MouseListener {
     }
 
     private void spawnEnemy() {
-        if (difficultyLevel >= 1 && (boss == null || boss.isDead())) {
-            if (random.nextInt(100) < 100) {
+        if (difficultyLevel >= 2 && (boss == null || boss.isDead())) {
+            if (random.nextInt(100) < 1) {
                 boss = new Enemy_Boss(1200, 250, 300, 300, this);
                 return;
             }
