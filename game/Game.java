@@ -32,12 +32,14 @@ public class Game extends JPanel implements KeyListener, MouseListener {
     // private Timer spawnTimer;
     private Random random;
     private Timer gameLoopTimer;
+    private Timer difficultyTimer;
 
-    private int spawnInterval = 2000;
+    private int difficultyLevel = 0;
+    private int spawnInterval = 1200;
     private long lastSpawnTime = 0;
 
     private Hp_bar hpbar;
-    private Background background;
+    private Background bg;
     private GameStats gameStats;
 
     int gameSpeed = 30;
@@ -45,7 +47,12 @@ public class Game extends JPanel implements KeyListener, MouseListener {
 
     Botnoi bot = new Botnoi(50, 450, 100, 100);
     Hp_bar hpBar = new Hp_bar(bot.getMaxHealth());
-    Background bg = new Background("/img/Cyber_World_bg.png");
+    // Background bg = new Background("/img/Cyber_World_bg.png");
+    private final String[] BG_PATHS = {
+            "/img/Cyber_World_bg.png",
+            "/img/Cyber_World_bg_Level2.png",
+            "/img/Cyber_World_bg_Level3.png"
+    };
     // Enemy[] enemies;
 
     public Game() {
@@ -61,6 +68,13 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         random = new Random();
         gameStats = new GameStats();
 
+        bg = new Background(BG_PATHS[0]);
+
+        difficultyTimer = new Timer(45000, e -> {
+            if (currenState == GameState.PLAYING) {
+                increaseDifficulty();
+            }
+        });
         // spawnTimer.start();
         gameLoopTimer = new Timer(16, e -> {
             if (currenState == GameState.PLAYING) {
@@ -89,18 +103,31 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         }
         activeEnemies.removeIf(en -> {
             int x = 0;
+            boolean hasScored = false;
             if (en instanceof Enemy_Bug) {
-                x = ((Enemy_Bug) en).x;
+                Enemy_Bug bug = (Enemy_Bug) en;
+                x = bug.x;
+                hasScored = bug.isScored();
             } else if (en instanceof Enemy_Firewall) {
-                x = ((Enemy_Firewall) en).x;
+                Enemy_Firewall fire = (Enemy_Firewall) en;
+                x = fire.x;
+                hasScored = fire.isScored();
             }
-            return x < -100;
+
+            return hasScored || (x < -200);
         });
     }
 
     public void increaseDifficulty() {
         if (spawnInterval > 500) {
-            spawnInterval -= 100;
+            spawnInterval -= 150;
+        }
+
+        difficultyLevel++;
+
+        if (difficultyLevel < BG_PATHS.length) {
+            String newBgPath = BG_PATHS[difficultyLevel];
+            bg = new Background(newBgPath);
         }
 
         // spawnTimer.setDelay(spawnInterval);
@@ -133,6 +160,9 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         bot = new Botnoi(50, 450, 100, 100);
         hpBar = new Hp_bar(bot.getMaxHealth());
         gameStats = new GameStats();
+        difficultyLevel = 0;
+
+        bg = new Background(BG_PATHS[0]);
 
         activeEnemies.forEach(enemy -> {
             if (enemy instanceof Enemy_Bug)
@@ -142,6 +172,8 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         });
 
         activeEnemies.clear();
+
+        difficultyTimer.start();
 
         lastSpawnTime = System.currentTimeMillis();
 
@@ -159,8 +191,9 @@ public class Game extends JPanel implements KeyListener, MouseListener {
     public void paint(Graphics g) {
         // super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
-        bg.draw(g, 1000, 600);
-
+        if (bg != null) {
+            bg.draw(g, 1000, 600);
+        }
         if (currenState == GameState.PLAYING) {
             boolean tookDamage = false;
 
@@ -200,7 +233,7 @@ public class Game extends JPanel implements KeyListener, MouseListener {
             if (bot.health <= 0) {
                 currenState = GameState.GAMEOVER;
                 gameLoopTimer.stop();
-
+                difficultyTimer.stop();
                 activeEnemies.forEach(e -> {
                     if (e instanceof Enemy_Bug)
                         ((Enemy_Bug) e).stopMoving();

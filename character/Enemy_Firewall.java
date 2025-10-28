@@ -14,6 +14,7 @@ import game.*;
 public class Enemy_Firewall {
     public int x, y, width, height, speed;
     private int xEnemy;
+    private boolean isScored = false;
     // private Timer moveTimer;
 
     public Enemy_Firewall(int x, int y, int w, int h, int speed, JPanel game) {
@@ -28,15 +29,19 @@ public class Enemy_Firewall {
 
     public void updatePosition(Game game) {
         x -= speed;
-        if (x < 0) {
+        if (x < 0 && !isScored) {
             if (game.getCurrentState() == GameState.PLAYING) {
-                game.getGameStats().increaseScore(50);
+                game.getGameStats().increaseScore(100);
+                this.isScored = true;
 
                 if (game.getGameStats().getScore() % 500 == 0) {
                     game.increaseDifficulty();
                 }
             }
         }
+    }
+
+    public void stopMoving() {
     }
 
     /*
@@ -67,7 +72,9 @@ public class Enemy_Firewall {
      * moveTimer.start();
      * }
      */
-    public void stopMoving() {
+
+    public boolean isScored() {
+        return isScored;
     }
 
     public BufferedImage getImage() {

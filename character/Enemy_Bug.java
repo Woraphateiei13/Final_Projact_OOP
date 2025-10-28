@@ -15,6 +15,7 @@ import game.GameState;
 public class Enemy_Bug {
     public int x, y, width, height, speed;
     private int xEnemy;
+    private boolean isScored = false;
     // private Timer moveTimer;
 
     public Enemy_Bug(int x, int y, int w, int h, int speed, JPanel game) {
@@ -29,9 +30,10 @@ public class Enemy_Bug {
 
     public void updatePosition(Game game) {
         x -= speed;
-        if (x < 0) {
+        if (x < 0 && !isScored) {
             if (game.getCurrentState() == GameState.PLAYING) {
                 game.getGameStats().increaseScore(50);
+                this.isScored = true;
 
                 if (game.getGameStats().getScore() % 500 == 0) {
                     game.increaseDifficulty();
@@ -72,6 +74,9 @@ public class Enemy_Bug {
      * moveTimer.start();
      * }
      */
+    public boolean isScored() {
+        return isScored;
+    }
 
     public BufferedImage getImage() {
         BufferedImage image = null;
