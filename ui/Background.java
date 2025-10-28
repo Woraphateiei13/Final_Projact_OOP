@@ -8,10 +8,9 @@ public class Background {
 
     public Background(String path) {
         try {
-            // ใช้พารามิเตอร์ path ในการโหลดรูป
             bgImage = ImageIO.read(getClass().getResourceAsStream(path));
         } catch (Exception e) {
-            System.out.println("❌ ไม่พบภาพพื้นหลัง: - Background.java:14" + path);
+            System.out.println("❌ ไม่พบภาพพื้นหลัง: - Background.java:13" + path);
         }
     }
 

@@ -8,17 +8,17 @@ public class Event {
         boolean y_Collision = (bot.y < enebug.y + enebug.height) && (bot.y + bot.botSize > enebug.y);
         return x_Collision && y_Collision;
 
-        // if (bot.x + bot.botSize > enebug.x && bot.x < enebug.x) {
-        // if (bot.y + bot.botSize >= enebug.y - enebug.height) {
-        // return true;
-        // }
-        // }
-        // return false;
     }
 
     public static boolean checkHit(Botnoi bot, Enemy_Firewall enefire) {
         boolean x_Collision = (bot.x < enefire.x + enefire.width) && (bot.x + bot.botSize > enefire.x);
         boolean y_Collision = (bot.y < enefire.y + enefire.height) && (bot.y + bot.botSize > enefire.y);
+        return x_Collision && y_Collision;
+    }
+
+    public static boolean checkHit(Botnoi bot, Item_hp item) {
+        boolean x_Collision = (bot.x < item.x + item.width) && (bot.x + bot.botSize > item.x);
+        boolean y_Collision = (bot.y < item.y + item.height) && (bot.y + bot.botSize > item.y);
         return x_Collision && y_Collision;
     }
 }

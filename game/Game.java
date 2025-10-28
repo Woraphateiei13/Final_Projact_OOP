@@ -94,6 +94,14 @@ public class Game extends JPanel implements KeyListener, MouseListener {
                 ((Enemy_Bug) en).updatePosition(this);
             } else if (en instanceof Enemy_Firewall) {
                 ((Enemy_Firewall) en).updatePosition(this);
+            } else if (en instanceof Item_hp) {
+                Item_hp item = (Item_hp) en;
+                item.updatePosition(this);
+
+                if (Event.checkHit(bot, item)) {
+                    item.collect();
+                    bot.health = Math.min(bot.getMaxHealth(), bot.health + 20);
+                }
             }
         });
 
@@ -103,24 +111,28 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         }
         activeEnemies.removeIf(en -> {
             int x = 0;
-            boolean hasScored = false;
+            boolean shouldRemove = false;
             if (en instanceof Enemy_Bug) {
                 Enemy_Bug bug = (Enemy_Bug) en;
                 x = bug.x;
-                hasScored = bug.isScored();
+                shouldRemove = bug.isScored() || (x < -200);
             } else if (en instanceof Enemy_Firewall) {
                 Enemy_Firewall fire = (Enemy_Firewall) en;
                 x = fire.x;
-                hasScored = fire.isScored();
+                shouldRemove = fire.isScored() || (x < -200);
+            } else if (en instanceof Item_hp) {
+                Item_hp item = (Item_hp) en;
+                x = item.x;
+                shouldRemove = item.isCollected() || (x < -100);
             }
 
-            return hasScored || (x < -200);
+            return shouldRemove;
         });
     }
 
     public void increaseDifficulty() {
         if (spawnInterval > 500) {
-            spawnInterval -= 150;
+            spawnInterval -= 200;
         }
 
         difficultyLevel++;
@@ -130,11 +142,18 @@ public class Game extends JPanel implements KeyListener, MouseListener {
             bg = new Background(newBgPath);
         }
 
-        // spawnTimer.setDelay(spawnInterval);
         System.out.println(spawnInterval);
     }
 
     private void spawnEnemy() {
+        if (random.nextInt(100) < 10) {
+            int yPos = 400;
+            int w = 40;
+            int h = 40;
+
+            activeEnemies.add(new Item_hp(1000, yPos, w, h, this));
+            return;
+        }
         boolean spawnMons = random.nextBoolean();
 
         int yPos = spawnMons ? 370 : 470;
@@ -174,6 +193,7 @@ public class Game extends JPanel implements KeyListener, MouseListener {
         activeEnemies.clear();
 
         difficultyTimer.start();
+        gameLoopTimer.start();
 
         lastSpawnTime = System.currentTimeMillis();
 
@@ -199,6 +219,11 @@ public class Game extends JPanel implements KeyListener, MouseListener {
 
             for (int i = 0; i < activeEnemies.size(); i++) {
                 Object enemy = activeEnemies.get(i);
+
+                if (enemy instanceof Item_hp) {
+                    Item_hp item = (Item_hp) enemy;
+                    g2.drawImage(item.getImage(), item.x, item.y, item.width, item.height, null);
+                }
 
                 if (enemy instanceof Enemy_Bug) {
                     Enemy_Bug bug = (Enemy_Bug) enemy;
